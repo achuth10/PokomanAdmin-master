@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -126,16 +127,22 @@ public class MainActivity extends AppCompatActivity {
         showbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (showQuestion.equals("0")) {
-                    showQuestion = "1";
-                    int curr = Integer.parseInt(currentQuesno);
-                    updateQuestion(curr, questionList);
-                    showbtn.setText("Hide Question");
-                } else {
-                    showQuestion = "0";
-                    showbtn.setText("Show Question");
+                if (showQuestion != null) {
+                    if (showQuestion.equals("0")) {
+                        showQuestion = "1";
+                        int curr = Integer.parseInt(currentQuesno);
+                        updateQuestion(curr, questionList);
+                        showbtn.setText("Hide Question");
+                    } else {
+                        showQuestion = "0";
+                        showbtn.setText("Show Question");
+                    }
+                    updateChange();
                 }
-                updateChange();
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"Please try again",Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
