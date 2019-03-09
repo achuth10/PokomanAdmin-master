@@ -2,6 +2,7 @@ package in.pokoman.www.pokemonadmin;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -32,7 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference mQuizReference;
     private DatabaseReference mQuestionsReference;
     private String liveStatus, showQuestion;
+    int intial =0;
     private String currentQuesno = "1";
+    CountDownTimer waitTimer;
     private List<Question> questionList;
     private ValueEventListener mQuizStatusListner;
     private ValueEventListener mQuizListener;
@@ -85,17 +88,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void disableButton() {
         //When QUiz is Live
-        if(liveStatus == "1"){
-            startbtn.setClickable(false);
-            showbtn.setClickable(true);
-            nextbtn.setClickable(true);
-            endbtn.setClickable(true);
-        }
-        else{
-            showbtn.setClickable(false);
-            nextbtn.setClickable(false);
-            endbtn.setClickable(false);
-            startbtn.setClickable(true);
+        if(liveStatus!=null) {
+            if (liveStatus.equals("1")) {
+                startbtn.setClickable(false);
+                showbtn.setClickable(true);
+                nextbtn.setClickable(true);
+                endbtn.setClickable(true);
+            } else {
+                showbtn.setClickable(false);
+                nextbtn.setClickable(false);
+                endbtn.setClickable(false);
+                startbtn.setClickable(true);
+            }
         }
     }
 
@@ -129,13 +133,21 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (showQuestion != null) {
                     if (showQuestion.equals("0")) {
+                        intial++;
                         showQuestion = "1";
                         int curr = Integer.parseInt(currentQuesno);
                         updateQuestion(curr, questionList);
                         showbtn.setText("Hide Question");
+                        if(intial>1)
+                            reverseTimer(20);
+
                     } else {
                         showQuestion = "0";
                         showbtn.setText("Show Question");
+                        if(waitTimer != null) {
+                            waitTimer.cancel();
+                            waitTimer = null;
+                        }
                     }
                     updateChange();
                 }
@@ -172,6 +184,10 @@ public class MainActivity extends AppCompatActivity {
                 showQuestion="0";
                 currentQuesno="0";
                 v1.stopPlayback();
+                if(waitTimer != null) {
+                    waitTimer.cancel();
+                    waitTimer = null;
+                }
                 updateChange();
             }
         });
@@ -242,7 +258,32 @@ public class MainActivity extends AppCompatActivity {
             mQuizStatusReference.addValueEventListener(mQuizStatusListner);
         }
     }
+    public void reverseTimer(int Seconds) {
+        nextbtn.callOnClick();
+        waitTimer = new CountDownTimer(Seconds * 1000 + 1000, 1000) {
 
+            public void onTick(long millisUntilFinished) {
+                int seconds = (int) (millisUntilFinished / 1000);
+                seconds = seconds % 60;
+                nextbtn.setText(""+seconds);
+            }
+
+            public void onFinish() {
+                Toast.makeText(getApplicationContext(),"Next question",Toast.LENGTH_SHORT).show();
+                    reverseTimer(20);
+            }
+
+        }.start();
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(waitTimer != null) {
+            waitTimer.cancel();
+            waitTimer = null;
+        }
+
+    }
     @Override
     protected void onStop() {
         super.onStop();
